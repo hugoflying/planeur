@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Planeur LFNS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+<style>
+  :root{
+    --acc:#0b6bcb; --acc-soft:#e7f0fb; --ok:#1f9d55; --ok-soft:#e4f6ec;
+    --warn:#c0392b; --ink:#1a2634; --panel:#ffffff; --bg:#eef2f7; --line:#d4dbe4;
+  }
+  html[data-theme="dark"]{
+    --acc:#4aa3ff; --acc-soft:#12243a; --ok:#33c27f; --ok-soft:#13291f;
+    --warn:#ff6b5b; --ink:#e6edf3; --panel:#182430; --bg:#0f1620; --line:#2a3a49;
+  }
+  html,body{background:var(--bg);color:var(--ink);font-size:14px;}
+  body{-webkit-tap-highlight-color:transparent;}
+  .navbar{min-height:2.6rem;}
+  .navbar,.navbar-brand{background:var(--acc);}
+  .navbar-brand{min-height:2.6rem;align-items:center;}
+  .navbar-item{color:#fff !important;padding:.3rem .7rem;}
+  .brand-title{font-weight:800;letter-spacing:.4px;font-size:1rem;}
+  .cont{max-width:640px;margin:0 auto;padding:.6rem;}
+  .panel-card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.75rem;margin-bottom:.7rem;}
+  .tabs{margin-bottom:.7rem !important;}
+  .tabs.is-toggle li.is-active a{background:var(--acc);border-color:var(--acc);color:#fff;}
+  .tabs a{color:var(--ink);border-color:var(--line);font-size:.9rem;padding:.4rem .5rem;}
+  .tabs.is-toggle a{font-weight:700;}
+  .input,.select select{background:var(--panel);color:var(--ink);border-color:var(--line);font-size:1rem;height:auto;padding:.4rem .55rem;}
+  .input:focus{border-color:var(--acc);box-shadow:0 0 0 .1em var(--acc-soft);}
+  .field-lbl{font-weight:700;font-size:.85rem;margin-bottom:.2rem;display:block;}
+  .readout{background:var(--acc-soft);border:1px solid var(--acc);border-radius:11px;padding:.7rem;text-align:center;}
+  .readout .big{font-size:2rem;font-weight:800;line-height:1;color:var(--acc);font-variant-numeric:tabular-nums;}
+  .readout .unit{font-size:1rem;font-weight:700;color:var(--acc);}
+  .readout .sub{font-size:.9rem;margin-top:.3rem;opacity:.85;}
+  .readout.is-warn{background:#fdece9;border-color:var(--warn);}
+  html[data-theme="dark"] .readout.is-warn{background:#2a1613;}
+  .readout.is-warn .big,.readout.is-warn .unit{color:var(--warn);}
+  .breakdown{font-size:.85rem;margin-top:.45rem;text-align:left;}
+  .breakdown div{padding:.1rem 0;border-bottom:1px dashed var(--line);}
+  .seg{display:flex;gap:.35rem;margin-bottom:.7rem;}
+  .seg button{flex:1;padding:.5rem;border-radius:9px;border:2px solid var(--acc);background:transparent;color:var(--acc);font-weight:800;font-size:.9rem;cursor:pointer;}
+  .seg button.is-on{background:var(--acc);color:#fff;}
+  .slider-val{font-size:1.5rem;font-weight:800;color:var(--acc);text-align:center;font-variant-numeric:tabular-nums;margin:.15rem 0;}
+  input[type=range]{width:100%;height:34px;-webkit-appearance:none;background:transparent;margin:0;}
+  input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:5px;background:var(--line);}
+  input[type=range]::-moz-range-track{height:8px;border-radius:5px;background:var(--line);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--acc);margin-top:-11px;border:3px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--acc);border:3px solid #fff;}
+  .qnh-stepper{display:flex;align-items:stretch;gap:.4rem;}
+  .qnh-btn{flex:0 0 52px;font-size:1.7rem;font-weight:800;border:2px solid var(--acc);background:var(--acc);color:#fff;border-radius:10px;cursor:pointer;line-height:1;}
+  .qnh-btn:active{filter:brightness(.9);}
+  #qnh{text-align:center;font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;}
+  .freq-row{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.6rem .55rem;margin-bottom:.5rem;}
+  .freq-row.dragging{opacity:.9;border-color:var(--acc);box-shadow:0 5px 14px rgba(0,0,0,.25);}
+  .freq-handle{flex:0 0 auto;font-size:1.3rem;color:var(--line);cursor:grab;padding:0 .25rem;touch-action:none;user-select:none;}
+  .freq-name{font-size:1.05rem;font-weight:700;flex:1;}
+  .freq-val{font-size:1.5rem;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .freq-del{border:none;background:transparent;color:var(--warn);font-size:1.2rem;cursor:pointer;padding:.15rem .4rem;}
+  .ck-item{display:flex;align-items:baseline;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:1rem;color:var(--ink);}
+  .ck-box{flex:0 0 auto;align-self:center;width:26px;height:26px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:900;color:transparent;font-size:1.1rem;margin-right:.55rem;}
+  .ck-name{font-weight:700;white-space:nowrap;}
+  .ck-leader{flex:1;border-bottom:2px dotted var(--line);margin:0 .4rem;position:relative;top:-.3em;min-width:14px;}
+  .ck-val{font-weight:600;white-space:nowrap;}
+  .ck-item.is-done{background:var(--ok-soft);border-color:var(--ok);}
+  .ck-item.is-done .ck-box{background:var(--ok);border-color:var(--ok);color:#fff;}
+  .ck-item.is-done .ck-name,.ck-item.is-done .ck-val{opacity:.7;}
+  .ck-item.wide{display:block;}
+  .ck-item.wide .top{display:flex;align-items:center;}
+  .ck-item.wide .desc{font-size:.85rem;font-weight:500;opacity:.85;margin-top:.2rem;margin-left:1.9rem;}
+  .brief-item{background:var(--panel);border-left:4px solid var(--warn);border-radius:7px;padding:.6rem .7rem;margin-bottom:.5rem;font-size:.95rem;line-height:1.4;}
+  .m-t{color:var(--warn);font-weight:800;} .m-v{color:var(--acc);font-weight:800;}
+  .m-b{color:var(--ok);font-weight:800;} .m-c{color:#d98800;font-weight:800;} .m-r{color:#8e44ad;font-weight:800;}
+  .progress-line{font-size:.95rem;font-weight:700;margin-bottom:.55rem;display:flex;justify-content:space-between;align-items:center;}
+  .hidden{display:none !important;}
+  .note{font-size:.78rem;opacity:.72;margin-top:.35rem;}
+  .ex-line{font-size:.85rem;line-height:1.45;padding:.1rem 0;}
+  .btn-big{font-size:.95rem;font-weight:700;}
+  .columns.is-mobile{margin-bottom:0;}
+  .columns.is-mobile .column{padding:.3rem .35rem;}
+</style>
+</head>
+<body>
+
+<nav class="navbar" role="navigation">
+  <div class="navbar-brand cont" style="display:flex;">
+    <span class="navbar-item brand-title">✈︎ PLANEUR · LFNS</span>
+    <span class="navbar-item" style="margin-left:auto;">
+      <button id="themeBtn" class="button is-small">🌙</button>
+    </span>
+  </div>
+</nav>
+
+<div class="cont">
+
+  <div class="tabs is-toggle is-fullwidth is-small">
+    <ul>
+      <li class="is-active" data-tab="finesse"><a>Finesse</a></li>
+      <li data-tab="fl"><a>QNH↔FL</a></li>
+      <li data-tab="freq"><a>Fréq.</a></li>
+      <li data-tab="check"><a>Checklists</a></li>
+    </ul>
+  </div>
+
+  <!-- ============ FINESSE ============ -->
+  <section id="tab-finesse">
+    <div class="seg">
+      <button id="modeDist" class="is-on">Distance max</button>
+      <button id="modeHaut">Hauteur nécessaire</button>
+    </div>
+
+    <div class="panel-card">
+      <label class="field-lbl">Finesse du planeur</label>
+      <input class="input" id="fFinesse" type="number" inputmode="decimal" value="40" min="1" step="1">
+
+      <div id="rowAlt" style="margin-top:.6rem;">
+        <label class="field-lbl">Altitude actuelle (m QNH)</label>
+        <div class="slider-val"><span id="fAltShow">1500</span> m</div>
+        <input type="range" id="fAltSlider" min="0" max="8000" step="25" value="1500">
+      </div>
+
+      <div id="rowDist" class="hidden" style="margin-top:.6rem;">
+        <label class="field-lbl">Distance jusqu'au terrain (km)</label>
+        <div class="slider-val"><span id="fDistShow">15</span> km</div>
+        <input type="range" id="fDistSlider" min="0" max="500" step="1" value="15">
+      </div>
+
+      <div style="margin-top:.5rem;">
+        <label class="field-lbl">Arrivée ZPA (m QNH)</label>
+        <input class="input" id="fZpa" type="number" inputmode="decimal" value="730">
+      </div>
+      <p class="note">Arrivée visée en ZPA au terrain. Les marges sont déjà comprises dans la ZPA.</p>
+    </div>
+
+    <div id="finResult" class="readout">
+      <div class="big" id="finBig">—</div>
+      <div class="sub" id="finSub"></div>
+      <div class="breakdown" id="finBreak"></div>
+    </div>
+
+    <div class="panel-card" style="margin-top:.7rem;">
+      <strong style="font-size:.95rem;" id="exTitle">Exemple</strong>
+      <div id="finExample" style="margin-top:.4rem;"></div>
+    </div>
+  </section>
+
+  <!-- ============ QNH / FL ============ -->
+  <section id="tab-fl" class="hidden">
+    <div class="seg">
+      <button id="mAltToFl" class="is-on">Altitude → FL</button>
+      <button id="mFlToAlt">FL → Altitude</button>
+    </div>
+
+    <div class="panel-card">
+      <label class="field-lbl">QNH (hPa)</label>
+      <div class="qnh-stepper">
+        <button id="qnhMinus" class="qnh-btn">−</button>
+        <input class="input" id="qnh" type="number" inputmode="decimal" value="1013">
+        <button id="qnhPlus" class="qnh-btn">+</button>
+      </div>
+
+      <div id="flInAlt" style="margin-top:.7rem;">
+        <label class="field-lbl">Altitude AMSL (m QNH)</label>
+        <div class="slider-val"><span id="flAltShow">1000</span> m</div>
+        <input type="range" id="flAltSlider" min="0" max="8000" step="25" value="1000">
+      </div>
+
+      <div id="flInFl" class="hidden" style="margin-top:.7rem;">
+        <label class="field-lbl">Niveau de vol (FL)</label>
+        <input class="input" id="flFl" type="number" inputmode="decimal" placeholder="ex : 65">
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="big" id="flBig">—</div>
+      <div class="unit" id="flUnit"></div>
+      <div class="sub" id="flSub"></div>
+    </div>
+    <p class="note">Réf. 1013,25 hPa · 8,53 m par hPa (Note FFVV 4.1.a).</p>
+  </section>
+
+  <!-- ============ FRÉQUENCES ============ -->
+  <section id="tab-freq" class="hidden">
+    <p class="note" style="margin-bottom:.5rem;">Maintiens ⠿ appuyé puis glisse pour réordonner. Sauvegarde automatique.</p>
+    <div id="freqList"></div>
+    <div class="panel-card">
+      <label class="field-lbl">Ajouter une fréquence</label>
+      <div class="columns is-mobile">
+        <div class="column is-6"><input class="input" id="newFreqName" type="text" placeholder="Nom (ex : LFNS A/A)"></div>
+        <div class="column is-6"><input class="input" id="newFreqVal" type="text" inputmode="decimal" placeholder="120.055"></div>
+      </div>
+      <button id="addFreq" class="button is-fullwidth btn-big" style="background:var(--acc);color:#fff;">+ Ajouter</button>
+    </div>
+  </section>
+
+  <!-- ============ CHECKLISTS ============ -->
+  <section id="tab-check" class="hidden">
+    <div class="tabs is-toggle is-fullwidth is-small">
+      <ul id="ckTabs">
+        <li class="is-active" data-ck="cris"><a>CRIS</a></li>
+        <li data-ck="tvbcr"><a>TVBCR</a></li>
+        <li data-ck="verdo"><a>VERDO</a></li>
+        <li data-ck="brief"><a>Sécu</a></li>
+      </ul>
+    </div>
+    <div id="ckControls" class="progress-line">
+      <span id="ckProgress">0 / 0</span>
+      <button id="ckReset" class="button is-small btn-big">Tout décocher</button>
+    </div>
+    <div id="ckContainer"></div>
+  </section>
+
+</div>
+
+<script>
+const store=(function(){let mem={},ok=true;try{localStorage.setItem('__t','1');localStorage.removeItem('__t');}catch(e){ok=false;}
+  return{get(k){try{return ok?localStorage.getItem(k):(k in mem?mem[k]:null);}catch(e){return k in mem?mem[k]:null;}},
+         set(k,v){try{ok?localStorage.setItem(k,v):(mem[k]=v);}catch(e){mem[k]=v;}}};})();
+const FT=0.3048,HPA_FT=28,REF=1013.25;
+const $=id=>document.getElementById(id);
+const fmt=(n,d=0)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+
+(function(){const s=store.get('theme');if(s)document.documentElement.setAttribute('data-theme',s);
+  const b=$('themeBtn');function r(){const d=document.documentElement.getAttribute('data-theme')==='dark';b.textContent=d?'☀︎':'🌙';}r();
+  b.addEventListener('click',()=>{const d=document.documentElement.getAttribute('data-theme')==='dark';
+    document.documentElement.setAttribute('data-theme',d?'light':'dark');store.set('theme',d?'light':'dark');r();});})();
+
+document.querySelectorAll('.tabs.is-fullwidth:not(#ckWrap) li[data-tab]').forEach(li=>{li.addEventListener('click',()=>{
+  document.querySelectorAll('li[data-tab]').forEach(x=>x.classList.remove('is-active'));li.classList.add('is-active');
+  ['finesse','fl','freq','check'].forEach(t=>$('tab-'+t).classList.add('hidden'));$('tab-'+li.dataset.tab).classList.remove('hidden');});});
+
+/* ===== EXEMPLES (phrases d'origine de l'utilisateur) ===== */
+const EX_HAUT=
+  '<div class="ex-line"><strong>Hauteur nécessaire = Distance / Finesse</strong></div>'+
+  '<div class="ex-line">Par exemple, à 10km du terrain F10, il me faudra : 10000/10 soit 1000m d\'altitude</div>'+
+  '<div class="ex-line">Par exemple, à 15km du terrain F25, il me faudra : 15000/25 soit 600m d\'altitude</div>'+
+  '<div class="ex-line">(auxquels s\'ajoute l\'altitude ZPA du terrain)</div>';
+const EX_DIST=
+  '<div class="ex-line"><strong>Distance maximale = Hauteur x Finesse</strong></div>'+
+  '<div class="ex-line">Par exemple, à 2300m d\'altitude F10, je pourrais parcourir en vol plané direct : 2300x10 = 23km maximum</div>'+
+  '<div class="ex-line">Par exemple, à 1600m d\'altitude F20, je pourrais parcourir en vol plané direct : 1600x20 = 32km maximum</div>'+
+  '<div class="ex-line">(dans l\'appli, la hauteur exploitable = altitude − ZPA)</div>';
+
+/* ===== FINESSE ===== */
+let finMode='dist';
+function setFinMode(m){finMode=m;
+  $('modeDist').classList.toggle('is-on',m==='dist');$('modeHaut').classList.toggle('is-on',m==='haut');
+  $('rowAlt').classList.toggle('hidden',m!=='dist');$('rowDist').classList.toggle('hidden',m!=='haut');
+  $('exTitle').textContent=m==='dist'?'Exemple — distance maximale':'Exemple — hauteur nécessaire';
+  $('finExample').innerHTML=m==='dist'?EX_DIST:EX_HAUT;calcFin();}
+$('modeDist').addEventListener('click',()=>setFinMode('dist'));
+$('modeHaut').addEventListener('click',()=>setFinMode('haut'));
+
+$('fAltSlider').addEventListener('input',()=>{$('fAltShow').textContent=fmt($('fAltSlider').value);store.set('alt',$('fAltSlider').value);calcFin();});
+$('fDistSlider').addEventListener('input',()=>{$('fDistShow').textContent=fmt($('fDistSlider').value);store.set('distk',$('fDistSlider').value);calcFin();});
+
+function calcFin(){
+  const f=parseFloat($('fFinesse').value),zpa=parseFloat($('fZpa').value);
+  const res=$('finResult'),big=$('finBig'),sub=$('finSub'),brk=$('finBreak');
+  store.set('zpa',$('fZpa').value);store.set('finesse',$('fFinesse').value);res.classList.remove('is-warn');
+  if(finMode==='dist'){
+    const altM=parseFloat($('fAltSlider').value);
+    if([f,zpa,altM].some(v=>isNaN(v))||f<=0){big.textContent='—';sub.textContent='';brk.innerHTML='';return;}
+    const usableM=altM-zpa,distKm=usableM*f/1000;
+    if(usableM<=0){res.classList.add('is-warn');big.textContent='0';sub.innerHTML='<span class="unit">km</span> — hauteur insuffisante';
+      brk.innerHTML='<div>Altitude '+fmt(altM)+' m − ZPA '+fmt(zpa)+' m = <strong>'+fmt(usableM)+' m</strong></div>';return;}
+    big.innerHTML=fmt(distKm,1)+' <span class="unit">km</span>';
+    sub.textContent='distance max en vol plané direct';
+    brk.innerHTML='<div>Altitude '+fmt(altM)+' m − arrivée ZPA '+fmt(zpa)+' m = <strong>'+fmt(usableM)+' m</strong></div>'+
+      '<div>'+fmt(usableM)+' m × finesse '+fmt(f)+' = <strong>'+fmt(distKm,1)+' km</strong></div>';
+  }else{
+    const dist=parseFloat($('fDistSlider').value);
+    if([f,zpa,dist].some(v=>isNaN(v))||f<=0){big.textContent='—';sub.textContent='';brk.innerHTML='';return;}
+    const lossM=dist*1000/f,neededM=zpa+lossM;
+    big.innerHTML=fmt(neededM)+' <span class="unit">m</span>';
+    sub.textContent='altitude minimale (QNH)';
+    brk.innerHTML='<div>Perte sur '+fmt(dist)+' km à finesse '+fmt(f)+' : '+fmt(dist*1000)+' m ÷ '+fmt(f)+' = <strong>'+fmt(lossM)+' m</strong></div>'+
+      '<div>+ arrivée ZPA '+fmt(zpa)+' m = <strong>'+fmt(neededM)+' m QNH</strong></div>';
+  }
+}
+['fFinesse','fZpa'].forEach(id=>$(id).addEventListener('input',calcFin));
+if(store.get('zpa'))$('fZpa').value=store.get('zpa');
+if(store.get('finesse'))$('fFinesse').value=store.get('finesse');
+if(store.get('alt')){$('fAltSlider').value=store.get('alt');$('fAltShow').textContent=fmt(store.get('alt'));}
+if(store.get('distk')){$('fDistSlider').value=store.get('distk');$('fDistShow').textContent=fmt(store.get('distk'));}
+$('finExample').innerHTML=EX_DIST;
+
+/* ===== QNH / FL ===== */
+let flMode='altToFl';
+function setFlMode(m){flMode=m;
+  $('mAltToFl').classList.toggle('is-on',m==='altToFl');$('mFlToAlt').classList.toggle('is-on',m==='flToAlt');
+  $('flInAlt').classList.toggle('hidden',m!=='altToFl');$('flInFl').classList.toggle('hidden',m!=='flToAlt');calcFl();}
+$('mAltToFl').addEventListener('click',()=>setFlMode('altToFl'));
+$('mFlToAlt').addEventListener('click',()=>setFlMode('flToAlt'));
+function stepQnh(d){const el=$('qnh');const v=parseFloat(el.value);el.value=(isNaN(v)?1013:v)+d;calcFl();}
+$('qnhPlus').addEventListener('click',()=>stepQnh(1));$('qnhMinus').addEventListener('click',()=>stepQnh(-1));
+$('flAltSlider').addEventListener('input',()=>{$('flAltShow').textContent=fmt($('flAltSlider').value);calcFl();});
+function calcFl(){
+  const qnh=parseFloat($('qnh').value),big=$('flBig'),unit=$('flUnit'),sub=$('flSub');
+  if(isNaN(qnh)){big.textContent='—';unit.textContent='';sub.textContent='';return;}
+  const off=(qnh-REF)*HPA_FT;
+  if(flMode==='altToFl'){const aM=parseFloat($('flAltSlider').value);
+    const aFt=aM/FT,flAlt=aFt-off,fl=flAlt/100;
+    big.textContent='FL '+fmt(Math.round(fl));unit.textContent='';
+    sub.innerHTML='FL exact '+fmt(fl,1)+' · altitude 1013 = '+fmt(flAlt*FT)+' m';
+  }else{const fl=parseFloat($('flFl').value);
+    if(isNaN(fl)){big.textContent='—';unit.textContent='';sub.textContent='';return;}
+    const aM=(fl*100+off)*FT;big.textContent=fmt(aM);unit.textContent='m QNH';sub.textContent='';}
+}
+['qnh','flFl'].forEach(id=>$(id).addEventListener('input',calcFl));
+
+/* ===== FRÉQUENCES ===== */
+function loadFreqs(){const r=store.get('freqs');if(r){try{return JSON.parse(r);}catch(e){}}
+  return[{name:'LFNS A/A',val:'120.055'},{name:'Détresse',val:'121.500'}];}
+let freqs=loadFreqs();
+function saveFreqs(){store.set('freqs',JSON.stringify(freqs));}
+function rebuildFromDom(){freqs=[...$('freqList').querySelectorAll('.freq-row')].map(r=>({name:r.dataset.name,val:r.dataset.val}));saveFreqs();renderFreqs();}
+function renderFreqs(){
+  const list=$('freqList');list.innerHTML='';
+  if(freqs.length===0)list.innerHTML='<p class="note">Aucune fréquence.</p>';
+  freqs.forEach((f,i)=>{const row=document.createElement('div');row.className='freq-row';row.dataset.name=f.name;row.dataset.val=f.val;
+    row.innerHTML='<span class="freq-handle">⠿</span><span class="freq-name">'+f.name+'</span><span class="freq-val">'+f.val+'</span><button class="freq-del" data-i="'+i+'">✕</button>';
+    list.appendChild(row);});
+  list.querySelectorAll('.freq-del').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();freqs.splice(+b.dataset.i,1);saveFreqs();renderFreqs();}));
+  enableReorder();
+}
+function enableReorder(){const list=$('freqList');
+  list.querySelectorAll('.freq-handle').forEach(h=>{h.addEventListener('pointerdown',e=>{e.preventDefault();h.setPointerCapture(e.pointerId);
+    const row=h.closest('.freq-row');let active=false;const hold=setTimeout(()=>{active=true;row.classList.add('dragging');},120);
+    const move=ev=>{if(!active)return;ev.preventDefault();const y=ev.clientY;const others=[...list.querySelectorAll('.freq-row:not(.dragging)')];let placed=false;
+      for(const r of others){const b=r.getBoundingClientRect();if(y<b.top+b.height/2){list.insertBefore(row,r);placed=true;break;}}if(!placed)list.appendChild(row);};
+    const up=()=>{clearTimeout(hold);h.releasePointerCapture&&h.releasePointerCapture(e.pointerId);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',up);
+      if(active){row.classList.remove('dragging');rebuildFromDom();}};
+    h.addEventListener('pointermove',move);h.addEventListener('pointerup',up);});});}
+$('addFreq').addEventListener('click',()=>{const n=$('newFreqName').value.trim(),v=$('newFreqVal').value.trim();if(!n||!v)return;
+  freqs.push({name:n,val:v});saveFreqs();renderFreqs();$('newFreqName').value='';$('newFreqVal').value='';});
+renderFreqs();
+
+/* ===== CHECKLISTS ===== */
+const CK={
+  cris:[['Commandes','Libres'],['Aérofreins','Symétriques'],['Compensateur','Réglé'],['Volets','Positionnés'],
+    ['Fréquence / Volume','Réglés'],['Flarm','Actif'],['QNH','Réglé'],['QFU','Vérifié'],['Transpondeur','Stby'],
+    ['Harnais','Attachés et serrés'],['S.O.A','En place'],['Verrière','Fermée et verrouillée'],
+    ['Aérofreins','Rentrés et verrouillés'],['Briefing sécurité','Terminé'],['Câble','Attaché et tendu'],['Ailes','Horizontales']],
+  tvbcr:[['<span class="m-t">T</span>rain','Sorti et verrouillé'],['<span class="m-t">T</span>ranspondeur','Stby'],['<span class="m-t">T</span>rafic sol / en vol','Vérifié'],
+    ['<span class="m-v">V</span>ent','Vérifié'],['<span class="m-v">V</span>.O.A','Affichée'],['<span class="m-v">V</span>olets','Positionnés'],
+    ['<span class="m-b">B</span>allasts','Vides'],['<span class="m-c">C</span>abine','Rangée'],['<span class="m-c">C</span>eintures','Serrées'],
+    ['<span class="m-c">C</span>ompensateur','Réglé'],['Fréquence / Volume','Réglé'],['Message <span class="m-r">R</span>adio','OK']]
+};
+const VERDO=[
+  ['<span class="m-t">V</span>ent','force, direction, régularité, dérive du planeur, ombre des nuages, fumées'],
+  ['<span class="m-t">E</span>tat de surface','différentes couleurs de champs, choix de la culture, sillons'],
+  ['<span class="m-t">R</span>elief','pentes descendantes, ascendantes, dévers'],
+  ['<span class="m-t">D</span>imensions','le plus grand champ possible dans l\'axe du vent'],
+  ['<span class="m-t">O</span>bstacles','approche dégagée, lignes électriques, éviter les bordures de champ']
+];
+const BRIEF=[
+  'Aile qui touche le sol : largage câble, freinage et arrêt dans l\'axe',
+  'Décollage interrompu : largage et dégagement vers la droite / vers la gauche',
+  'Après l\'envol, si casse câble H &lt; 80/100m sol : droit devant +/- 30° vers une zone favorable',
+  'Après l\'envol, si casse câble H &gt; 80/100m sol : assiette de référence et atterrissage contre QFU ou PTU basse hauteur. Privilégier un virage face au vent.'
+];
+let ckCurrent='cris';
+const ckState={cris:CK.cris.map(()=>false),tvbcr:CK.tvbcr.map(()=>false),verdo:VERDO.map(()=>false)};
+function renderCk(){const c=$('ckContainer');c.innerHTML='';const ctrl=$('ckControls');
+  if(ckCurrent==='brief'){ctrl.style.display='none';BRIEF.forEach(t=>{const d=document.createElement('div');d.className='brief-item';d.innerHTML=t;c.appendChild(d);});return;}
+  ctrl.style.display='flex';
+  if(ckCurrent==='verdo'){VERDO.forEach((it,i)=>{const done=ckState.verdo[i];const row=document.createElement('button');row.className='ck-item wide'+(done?' is-done':'');
+    row.innerHTML='<span class="top"><span class="ck-box">✓</span><span class="ck-name">'+it[0]+'</span></span><span class="desc">'+it[1]+'</span>';
+    row.addEventListener('click',()=>{ckState.verdo[i]=!ckState.verdo[i];renderCk();});c.appendChild(row);});updateProg('verdo',VERDO.length);return;}
+  CK[ckCurrent].forEach((it,i)=>{const done=ckState[ckCurrent][i];const row=document.createElement('button');row.className='ck-item'+(done?' is-done':'');
+    row.innerHTML='<span class="ck-box">✓</span><span class="ck-name">'+it[0]+'</span><span class="ck-leader"></span><span class="ck-val">'+it[1]+'</span>';
+    row.addEventListener('click',()=>{ckState[ckCurrent][i]=!ckState[ckCurrent][i];renderCk();});c.appendChild(row);});
+  updateProg(ckCurrent,CK[ckCurrent].length);}
+function updateProg(k,t){const n=ckState[k].filter(Boolean).length;$('ckProgress').textContent=n+' / '+t+(n===t&&t>0?'  ✅':'');}
+document.querySelectorAll('#ckTabs li').forEach(li=>{li.addEventListener('click',()=>{
+  document.querySelectorAll('#ckTabs li').forEach(x=>x.classList.remove('is-active'));li.classList.add('is-active');ckCurrent=li.dataset.ck;renderCk();});});
+$('ckReset').addEventListener('click',()=>{if(ckState[ckCurrent])ckState[ckCurrent]=ckState[ckCurrent].map(()=>false);renderCk();});
+renderCk();
+
+calcFin();calcFl();
+</script>
+</body>
+</html>
