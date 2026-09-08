@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Planeur LFNS</title>
+<title>GlideDeck</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
 <style>
   :root{
@@ -20,7 +20,7 @@
   .navbar,.navbar-brand{background:var(--acc);}
   .navbar-brand{min-height:2.6rem;align-items:center;}
   .navbar-item{color:#fff !important;padding:.3rem .7rem;}
-  .brand-title{font-weight:800;letter-spacing:.4px;font-size:1rem;}
+  .brand-title{font-weight:800;letter-spacing:1px;font-size:1.15rem;}
   .cont{max-width:640px;margin:0 auto;padding:.6rem;}
   .panel-card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.75rem;margin-bottom:.7rem;}
   .tabs{margin-bottom:.7rem !important;}
@@ -52,12 +52,16 @@
   .qnh-btn{flex:0 0 52px;font-size:1.7rem;font-weight:800;border:2px solid var(--acc);background:var(--acc);color:#fff;border-radius:10px;cursor:pointer;line-height:1;}
   .qnh-btn:active{filter:brightness(.9);}
   #qnh{text-align:center;font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums;}
-  .freq-row{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.6rem .55rem;margin-bottom:.5rem;}
-  .freq-row.dragging{opacity:.9;border-color:var(--acc);box-shadow:0 5px 14px rgba(0,0,0,.25);}
-  .freq-handle{flex:0 0 auto;font-size:1.3rem;color:var(--line);cursor:grab;padding:0 .25rem;touch-action:none;user-select:none;}
+  /* fréquences + drag */
+  .freq-row{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.6rem .55rem;margin-bottom:.5rem;transition:transform .18s cubic-bezier(.2,.8,.2,1);box-sizing:border-box;}
+  .freq-lift{position:fixed;z-index:2000;box-shadow:0 12px 28px rgba(0,0,0,.4);transform:scale(1.04);transition:box-shadow .15s;border-color:var(--acc);margin:0 !important;}
+  .freq-placeholder{border:2px dashed var(--acc);background:var(--acc-soft);border-radius:10px;margin-bottom:.5rem;box-sizing:border-box;transition:height .12s ease;}
+  .freq-handle{flex:0 0 auto;font-size:1.9rem;line-height:1;color:var(--acc);cursor:grab;padding:.1rem .55rem;touch-action:none;user-select:none;}
+  .freq-handle:active{cursor:grabbing;}
   .freq-name{font-size:1.05rem;font-weight:700;flex:1;}
   .freq-val{font-size:1.5rem;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums;white-space:nowrap;}
   .freq-del{border:none;background:transparent;color:var(--warn);font-size:1.2rem;cursor:pointer;padding:.15rem .4rem;}
+  /* checklists */
   .ck-item{display:flex;align-items:baseline;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:1rem;color:var(--ink);}
   .ck-box{flex:0 0 auto;align-self:center;width:26px;height:26px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:900;color:transparent;font-size:1.1rem;margin-right:.55rem;}
   .ck-name{font-weight:700;white-space:nowrap;}
@@ -85,7 +89,7 @@
 
 <nav class="navbar" role="navigation">
   <div class="navbar-brand cont" style="display:flex;">
-    <span class="navbar-item brand-title">✈︎ PLANEUR · LFNS</span>
+    <span class="navbar-item brand-title">✈ GlideDeck</span>
     <span class="navbar-item" style="margin-left:auto;">
       <button id="themeBtn" class="button is-small">🌙</button>
     </span>
@@ -167,8 +171,9 @@
       </div>
 
       <div id="flInFl" class="hidden" style="margin-top:.7rem;">
-        <label class="field-lbl">Niveau de vol (FL)</label>
-        <input class="input" id="flFl" type="number" inputmode="decimal" placeholder="ex : 65">
+        <label class="field-lbl">Niveau de vol</label>
+        <div class="slider-val"><span id="flFlShow">FL065</span></div>
+        <input type="range" id="flFlSlider" min="5" max="200" step="5" value="65">
       </div>
     </div>
 
@@ -182,7 +187,7 @@
 
   <!-- ============ FRÉQUENCES ============ -->
   <section id="tab-freq" class="hidden">
-    <p class="note" style="margin-bottom:.5rem;">Maintiens ⠿ appuyé puis glisse pour réordonner. Sauvegarde automatique.</p>
+    <p class="note" style="margin-bottom:.5rem;">Attrape la poignée ⠿ et glisse pour réordonner. Sauvegarde automatique.</p>
     <div id="freqList"></div>
     <div class="panel-card">
       <label class="field-lbl">Ajouter une fréquence</label>
@@ -226,11 +231,11 @@ const fmt=(n,d=0)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,max
   b.addEventListener('click',()=>{const d=document.documentElement.getAttribute('data-theme')==='dark';
     document.documentElement.setAttribute('data-theme',d?'light':'dark');store.set('theme',d?'light':'dark');r();});})();
 
-document.querySelectorAll('.tabs.is-fullwidth:not(#ckWrap) li[data-tab]').forEach(li=>{li.addEventListener('click',()=>{
+document.querySelectorAll('li[data-tab]').forEach(li=>{li.addEventListener('click',()=>{
   document.querySelectorAll('li[data-tab]').forEach(x=>x.classList.remove('is-active'));li.classList.add('is-active');
   ['finesse','fl','freq','check'].forEach(t=>$('tab-'+t).classList.add('hidden'));$('tab-'+li.dataset.tab).classList.remove('hidden');});});
 
-/* ===== EXEMPLES (phrases d'origine de l'utilisateur) ===== */
+/* ===== EXEMPLES ===== */
 const EX_HAUT=
   '<div class="ex-line"><strong>Hauteur nécessaire = Distance / Finesse</strong></div>'+
   '<div class="ex-line">Par exemple, à 10km du terrain F10, il me faudra : 10000/10 soit 1000m d\'altitude</div>'+
@@ -251,10 +256,8 @@ function setFinMode(m){finMode=m;
   $('finExample').innerHTML=m==='dist'?EX_DIST:EX_HAUT;calcFin();}
 $('modeDist').addEventListener('click',()=>setFinMode('dist'));
 $('modeHaut').addEventListener('click',()=>setFinMode('haut'));
-
 $('fAltSlider').addEventListener('input',()=>{$('fAltShow').textContent=fmt($('fAltSlider').value);store.set('alt',$('fAltSlider').value);calcFin();});
 $('fDistSlider').addEventListener('input',()=>{$('fDistShow').textContent=fmt($('fDistSlider').value);store.set('distk',$('fDistSlider').value);calcFin();});
-
 function calcFin(){
   const f=parseFloat($('fFinesse').value),zpa=parseFloat($('fZpa').value);
   const res=$('finResult'),big=$('finBig'),sub=$('finSub'),brk=$('finBreak');
@@ -265,16 +268,14 @@ function calcFin(){
     const usableM=altM-zpa,distKm=usableM*f/1000;
     if(usableM<=0){res.classList.add('is-warn');big.textContent='0';sub.innerHTML='<span class="unit">km</span> — hauteur insuffisante';
       brk.innerHTML='<div>Altitude '+fmt(altM)+' m − ZPA '+fmt(zpa)+' m = <strong>'+fmt(usableM)+' m</strong></div>';return;}
-    big.innerHTML=fmt(distKm,1)+' <span class="unit">km</span>';
-    sub.textContent='distance max en vol plané direct';
+    big.innerHTML=fmt(distKm,1)+' <span class="unit">km</span>';sub.textContent='distance max en vol plané direct';
     brk.innerHTML='<div>Altitude '+fmt(altM)+' m − arrivée ZPA '+fmt(zpa)+' m = <strong>'+fmt(usableM)+' m</strong></div>'+
       '<div>'+fmt(usableM)+' m × finesse '+fmt(f)+' = <strong>'+fmt(distKm,1)+' km</strong></div>';
   }else{
     const dist=parseFloat($('fDistSlider').value);
     if([f,zpa,dist].some(v=>isNaN(v))||f<=0){big.textContent='—';sub.textContent='';brk.innerHTML='';return;}
     const lossM=dist*1000/f,neededM=zpa+lossM;
-    big.innerHTML=fmt(neededM)+' <span class="unit">m</span>';
-    sub.textContent='altitude minimale (QNH)';
+    big.innerHTML=fmt(neededM)+' <span class="unit">m</span>';sub.textContent='altitude minimale (QNH)';
     brk.innerHTML='<div>Perte sur '+fmt(dist)+' km à finesse '+fmt(f)+' : '+fmt(dist*1000)+' m ÷ '+fmt(f)+' = <strong>'+fmt(lossM)+' m</strong></div>'+
       '<div>+ arrivée ZPA '+fmt(zpa)+' m = <strong>'+fmt(neededM)+' m QNH</strong></div>';
   }
@@ -296,21 +297,19 @@ $('mFlToAlt').addEventListener('click',()=>setFlMode('flToAlt'));
 function stepQnh(d){const el=$('qnh');const v=parseFloat(el.value);el.value=(isNaN(v)?1013:v)+d;calcFl();}
 $('qnhPlus').addEventListener('click',()=>stepQnh(1));$('qnhMinus').addEventListener('click',()=>stepQnh(-1));
 $('flAltSlider').addEventListener('input',()=>{$('flAltShow').textContent=fmt($('flAltSlider').value);calcFl();});
+$('flFlSlider').addEventListener('input',()=>{$('flFlShow').textContent='FL'+String($('flFlSlider').value).padStart(3,'0');calcFl();});
 function calcFl(){
   const qnh=parseFloat($('qnh').value),big=$('flBig'),unit=$('flUnit'),sub=$('flSub');
   if(isNaN(qnh)){big.textContent='—';unit.textContent='';sub.textContent='';return;}
   const off=(qnh-REF)*HPA_FT;
-  if(flMode==='altToFl'){const aM=parseFloat($('flAltSlider').value);
-    const aFt=aM/FT,flAlt=aFt-off,fl=flAlt/100;
-    big.textContent='FL '+fmt(Math.round(fl));unit.textContent='';
-    sub.innerHTML='FL exact '+fmt(fl,1)+' · altitude 1013 = '+fmt(flAlt*FT)+' m';
-  }else{const fl=parseFloat($('flFl').value);
-    if(isNaN(fl)){big.textContent='—';unit.textContent='';sub.textContent='';return;}
-    const aM=(fl*100+off)*FT;big.textContent=fmt(aM);unit.textContent='m QNH';sub.textContent='';}
+  if(flMode==='altToFl'){const aM=parseFloat($('flAltSlider').value);const aFt=aM/FT,flAlt=aFt-off,fl=flAlt/100;
+    big.textContent='FL '+fmt(Math.round(fl));unit.textContent='';sub.innerHTML='FL exact '+fmt(fl,1)+' · altitude 1013 = '+fmt(flAlt*FT)+' m';
+  }else{const fl=parseFloat($('flFlSlider').value);const aM=(fl*100+off)*FT;
+    big.textContent=fmt(aM);unit.textContent='m QNH';sub.textContent='FL'+String(fl).padStart(3,'0')+' au QNH '+fmt(qnh);}
 }
-['qnh','flFl'].forEach(id=>$(id).addEventListener('input',calcFl));
+['qnh'].forEach(id=>$(id).addEventListener('input',calcFl));
 
-/* ===== FRÉQUENCES ===== */
+/* ===== FRÉQUENCES + drag fluide ===== */
 function loadFreqs(){const r=store.get('freqs');if(r){try{return JSON.parse(r);}catch(e){}}
   return[{name:'LFNS A/A',val:'120.055'},{name:'Détresse',val:'121.500'}];}
 let freqs=loadFreqs();
@@ -323,16 +322,47 @@ function renderFreqs(){
     row.innerHTML='<span class="freq-handle">⠿</span><span class="freq-name">'+f.name+'</span><span class="freq-val">'+f.val+'</span><button class="freq-del" data-i="'+i+'">✕</button>';
     list.appendChild(row);});
   list.querySelectorAll('.freq-del').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();freqs.splice(+b.dataset.i,1);saveFreqs();renderFreqs();}));
-  enableReorder();
+  list.querySelectorAll('.freq-handle').forEach(h=>h.addEventListener('pointerdown',startDrag));
 }
-function enableReorder(){const list=$('freqList');
-  list.querySelectorAll('.freq-handle').forEach(h=>{h.addEventListener('pointerdown',e=>{e.preventDefault();h.setPointerCapture(e.pointerId);
-    const row=h.closest('.freq-row');let active=false;const hold=setTimeout(()=>{active=true;row.classList.add('dragging');},120);
-    const move=ev=>{if(!active)return;ev.preventDefault();const y=ev.clientY;const others=[...list.querySelectorAll('.freq-row:not(.dragging)')];let placed=false;
-      for(const r of others){const b=r.getBoundingClientRect();if(y<b.top+b.height/2){list.insertBefore(row,r);placed=true;break;}}if(!placed)list.appendChild(row);};
-    const up=()=>{clearTimeout(hold);h.releasePointerCapture&&h.releasePointerCapture(e.pointerId);h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',up);
-      if(active){row.classList.remove('dragging');rebuildFromDom();}};
-    h.addEventListener('pointermove',move);h.addEventListener('pointerup',up);});});}
+function startDrag(e){
+  e.preventDefault();
+  const handle=e.currentTarget,row=handle.closest('.freq-row'),list=$('freqList');
+  handle.setPointerCapture(e.pointerId);
+  const rect=row.getBoundingClientRect();
+  const offsetY=e.clientY-rect.top;
+  // placeholder à la place de la ligne
+  const ph=document.createElement('div');ph.className='freq-placeholder';ph.style.height=rect.height+'px';
+  list.insertBefore(ph,row);
+  // on soulève la vraie ligne (position fixe, suit le doigt)
+  row.classList.add('freq-lift');row.style.width=rect.width+'px';row.style.left=rect.left+'px';row.style.top=(e.clientY-offsetY)+'px';
+  document.body.appendChild(row);
+  if(navigator.vibrate)navigator.vibrate(8);
+
+  function flip(mutate){
+    const items=[...list.querySelectorAll('.freq-row')];
+    const first=items.map(el=>el.getBoundingClientRect().top);
+    mutate();
+    items.forEach((el,i)=>{const d=first[i]-el.getBoundingClientRect().top;
+      if(d){el.style.transition='none';el.style.transform='translateY('+d+'px)';
+        requestAnimationFrame(()=>{el.style.transition='';el.style.transform='';});}});
+  }
+  function move(ev){
+    ev.preventDefault();const y=ev.clientY;row.style.top=(y-offsetY)+'px';
+    const sibs=[...list.children].filter(c=>c!==ph);let target=null;
+    for(const s of sibs){const b=s.getBoundingClientRect();if(y<b.top+b.height/2){target=s;break;}}
+    if(target){if(ph.nextElementSibling!==target)flip(()=>list.insertBefore(ph,target));}
+    else{if(list.lastElementChild!==ph)flip(()=>list.appendChild(ph));}
+  }
+  function up(){
+    handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);
+    const dest=ph.getBoundingClientRect();
+    row.style.transition='top .16s ease, left .16s ease, transform .16s ease';
+    row.style.top=dest.top+'px';row.style.left=dest.left+'px';row.style.transform='scale(1)';
+    setTimeout(()=>{list.insertBefore(row,ph);ph.remove();row.classList.remove('freq-lift');
+      row.style.transition='';row.style.transform='';row.style.top='';row.style.left='';row.style.width='';rebuildFromDom();},170);
+  }
+  handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
+}
 $('addFreq').addEventListener('click',()=>{const n=$('newFreqName').value.trim(),v=$('newFreqVal').value.trim();if(!n||!v)return;
   freqs.push({name:n,val:v});saveFreqs();renderFreqs();$('newFreqName').value='';$('newFreqVal').value='';});
 renderFreqs();
