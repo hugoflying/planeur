@@ -62,10 +62,10 @@
   .freq-val{font-size:1.5rem;font-weight:800;color:var(--acc);font-variant-numeric:tabular-nums;white-space:nowrap;}
   .freq-del{border:none;background:transparent;color:var(--warn);font-size:1.2rem;cursor:pointer;padding:.15rem .4rem;}
   /* checklists */
-  .ck-item{display:flex;align-items:baseline;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:1rem;color:var(--ink);}
+  .ck-item{display:flex;align-items:center;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;margin-bottom:.4rem;cursor:pointer;font-size:1rem;color:var(--ink);min-height:44px;}
   .ck-box{flex:0 0 auto;align-self:center;width:26px;height:26px;border-radius:7px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:900;color:transparent;font-size:1.1rem;margin-right:.55rem;}
   .ck-name{font-weight:700;white-space:nowrap;}
-  .ck-leader{flex:1;border-bottom:2px dotted var(--line);margin:0 .4rem;position:relative;top:-.3em;min-width:14px;}
+  .ck-leader{flex:1;border-bottom:2px dotted var(--line);margin:0 .4rem;position:relative;top:-.15em;min-width:14px;align-self:center;}
   .ck-val{font-weight:600;white-space:nowrap;}
   .ck-item.is-done{background:var(--ok-soft);border-color:var(--ok);}
   .ck-item.is-done .ck-box{background:var(--ok);border-color:var(--ok);color:#fff;}
@@ -83,6 +83,14 @@
   .btn-big{font-size:.95rem;font-weight:700;}
   .columns.is-mobile{margin-bottom:0;}
   .columns.is-mobile .column{padding:.3rem .35rem;}
+  .freq-add{font-size:1.15rem !important;padding:.6rem .7rem !important;}
+  #newFreqName{text-transform:uppercase;}
+  details.ex-fold{padding:.6rem .75rem;}
+  details.ex-fold>summary{cursor:pointer;font-weight:700;font-size:.95rem;list-style:none;display:flex;align-items:center;gap:.4rem;}
+  details.ex-fold>summary::-webkit-details-marker{display:none;}
+  details.ex-fold>summary::before{content:'▸';color:var(--acc);font-size:1rem;transition:transform .15s;}
+  details.ex-fold[open]>summary::before{transform:rotate(90deg);}
+  #ckTabs a{font-size:.78rem;padding:.4rem .2rem;}
 </style>
 </head>
 <body>
@@ -120,8 +128,8 @@
 
       <div id="rowAlt" style="margin-top:.6rem;">
         <label class="field-lbl">Altitude actuelle (m QNH)</label>
-        <div class="slider-val"><span id="fAltShow">1500</span> m</div>
-        <input type="range" id="fAltSlider" min="0" max="8000" step="25" value="1500">
+        <div class="slider-val"><span id="fAltShow">3000</span> m</div>
+        <input type="range" id="fAltSlider" min="0" max="8000" step="25" value="3000">
       </div>
 
       <div id="rowDist" class="hidden" style="margin-top:.6rem;">
@@ -130,9 +138,10 @@
         <input type="range" id="fDistSlider" min="0" max="500" step="1" value="15">
       </div>
 
-      <div style="margin-top:.5rem;">
+      <div style="margin-top:.6rem;">
         <label class="field-lbl">Arrivée ZPA (m QNH)</label>
-        <input class="input" id="fZpa" type="number" inputmode="decimal" value="730">
+        <div class="slider-val"><span id="fZpaShow">2400</span> m</div>
+        <input type="range" id="fZpaSlider" min="0" max="5000" step="25" value="2400">
       </div>
       <p class="note">Arrivée visée en ZPA au terrain. Les marges sont déjà comprises dans la ZPA.</p>
     </div>
@@ -143,10 +152,10 @@
       <div class="breakdown" id="finBreak"></div>
     </div>
 
-    <div class="panel-card" style="margin-top:.7rem;">
-      <strong style="font-size:.95rem;" id="exTitle">Exemple</strong>
-      <div id="finExample" style="margin-top:.4rem;"></div>
-    </div>
+    <details class="panel-card ex-fold" id="exWrap" style="margin-top:.7rem;">
+      <summary id="exTitle">Exemple — distance maximale</summary>
+      <div id="finExample" style="margin-top:.5rem;"></div>
+    </details>
   </section>
 
   <!-- ============ QNH / FL ============ -->
@@ -190,12 +199,10 @@
     <p class="note" style="margin-bottom:.5rem;">Attrape la poignée ⠿ et glisse pour réordonner. Sauvegarde automatique.</p>
     <div id="freqList"></div>
     <div class="panel-card">
-      <label class="field-lbl">Ajouter une fréquence</label>
-      <div class="columns is-mobile">
-        <div class="column is-6"><input class="input" id="newFreqName" type="text" placeholder="Nom (ex : LFNS A/A)"></div>
-        <div class="column is-6"><input class="input" id="newFreqVal" type="text" inputmode="decimal" placeholder="120.055"></div>
-      </div>
-      <button id="addFreq" class="button is-fullwidth btn-big" style="background:var(--acc);color:#fff;">+ Ajouter</button>
+      <label class="field-lbl" style="margin-bottom:.6rem;font-size:1rem;">Ajouter une fréquence</label>
+      <input class="input freq-add" id="newFreqName" type="text" placeholder="NOM (ex : LFNS A/A)" style="margin-bottom:.6rem;">
+      <input class="input freq-add" id="newFreqVal" type="text" inputmode="decimal" placeholder="120.055" style="margin-bottom:.7rem;">
+      <button id="addFreq" class="button is-fullwidth btn-big" style="background:var(--acc);color:#fff;padding:.7rem;font-size:1.05rem;">+ Ajouter</button>
     </div>
   </section>
 
@@ -206,7 +213,7 @@
         <li class="is-active" data-ck="cris"><a>CRIS</a></li>
         <li data-ck="tvbcr"><a>TVBCR</a></li>
         <li data-ck="verdo"><a>VERDO</a></li>
-        <li data-ck="brief"><a>Sécu</a></li>
+        <li data-ck="brief"><a>BRIEF SÉCU</a></li>
       </ul>
     </div>
     <div id="ckControls" class="progress-line">
@@ -259,9 +266,9 @@ $('modeHaut').addEventListener('click',()=>setFinMode('haut'));
 $('fAltSlider').addEventListener('input',()=>{$('fAltShow').textContent=fmt($('fAltSlider').value);store.set('alt',$('fAltSlider').value);calcFin();});
 $('fDistSlider').addEventListener('input',()=>{$('fDistShow').textContent=fmt($('fDistSlider').value);store.set('distk',$('fDistSlider').value);calcFin();});
 function calcFin(){
-  const f=parseFloat($('fFinesse').value),zpa=parseFloat($('fZpa').value);
+  const f=parseFloat($('fFinesse').value),zpa=parseFloat($('fZpaSlider').value);
   const res=$('finResult'),big=$('finBig'),sub=$('finSub'),brk=$('finBreak');
-  store.set('zpa',$('fZpa').value);store.set('finesse',$('fFinesse').value);res.classList.remove('is-warn');
+  store.set('zpa',$('fZpaSlider').value);store.set('finesse',$('fFinesse').value);res.classList.remove('is-warn');
   if(finMode==='dist'){
     const altM=parseFloat($('fAltSlider').value);
     if([f,zpa,altM].some(v=>isNaN(v))||f<=0){big.textContent='—';sub.textContent='';brk.innerHTML='';return;}
@@ -280,8 +287,9 @@ function calcFin(){
       '<div>+ arrivée ZPA '+fmt(zpa)+' m = <strong>'+fmt(neededM)+' m QNH</strong></div>';
   }
 }
-['fFinesse','fZpa'].forEach(id=>$(id).addEventListener('input',calcFin));
-if(store.get('zpa'))$('fZpa').value=store.get('zpa');
+$('fFinesse').addEventListener('input',calcFin);
+$('fZpaSlider').addEventListener('input',()=>{$('fZpaShow').textContent=fmt($('fZpaSlider').value);store.set('zpa',$('fZpaSlider').value);calcFin();});
+if(store.get('zpa')){$('fZpaSlider').value=store.get('zpa');$('fZpaShow').textContent=fmt(store.get('zpa'));}
 if(store.get('finesse'))$('fFinesse').value=store.get('finesse');
 if(store.get('alt')){$('fAltSlider').value=store.get('alt');$('fAltShow').textContent=fmt(store.get('alt'));}
 if(store.get('distk')){$('fDistSlider').value=store.get('distk');$('fDistShow').textContent=fmt(store.get('distk'));}
@@ -363,6 +371,7 @@ function startDrag(e){
   }
   handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
 }
+$('newFreqName').addEventListener('input',function(){this.value=this.value.toUpperCase();});
 $('addFreq').addEventListener('click',()=>{const n=$('newFreqName').value.trim(),v=$('newFreqVal').value.trim();if(!n||!v)return;
   freqs.push({name:n,val:v});saveFreqs();renderFreqs();$('newFreqName').value='';$('newFreqVal').value='';});
 renderFreqs();
