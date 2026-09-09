@@ -87,11 +87,10 @@
   details.ex-fold>summary::-webkit-details-marker{display:none;}
   details.ex-fold>summary::before{content:'▸';color:var(--acc);transition:transform .15s;}
   details.ex-fold[open]>summary::before{transform:rotate(90deg);}
-  #ckTabs{margin-bottom:.55rem !important;}
-  #ckTabs ul{border-bottom:none;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel);}
-  #ckTabs li{flex:1;}
-  #ckTabs li+li{margin-left:0;}
-  #ckTabs li a{border:0;border-left:1px solid var(--line);border-radius:0;justify-content:center;padding:.5rem .1rem;font-size:.78rem;font-weight:700;color:var(--ink);background:transparent;}
+  .ckwrap{margin-bottom:.55rem;}
+  #ckTabs{list-style:none;margin:0;padding:0;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel);}
+  #ckTabs li{flex:1;display:flex;}
+  #ckTabs a{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border:0;border-left:1px solid var(--line);border-radius:0;margin:0;padding:.55rem .1rem;font-size:.78rem;font-weight:700;line-height:1.1;color:var(--ink);background:transparent;}
   #ckTabs li:first-child a{border-left:0;}
   #ckTabs li.is-active a{background:var(--acc);color:#fff;}
 </style>
@@ -238,7 +237,7 @@
 
   <!-- ===== CHECKLISTS ===== -->
   <section id="tab-check"><div class="pad">
-    <div class="tabs is-toggle is-fullwidth is-small">
+    <div class="ckwrap">
       <ul id="ckTabs">
         <li class="is-active" data-ck="cris"><a>CRIS</a></li>
         <li data-ck="tvbcr"><a>TVBCR</a></li>
@@ -274,7 +273,7 @@ const fmt=(n,d=0)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,max
 /* onglets */
 document.querySelectorAll('li[data-tab]').forEach(li=>{li.addEventListener('click',()=>{
   document.querySelectorAll('li[data-tab]').forEach(x=>x.classList.remove('is-active'));li.classList.add('is-active');
-  document.querySelectorAll('.appcontent>section').forEach(sec=>sec.classList.remove('active'));$('tab-'+li.dataset.tab).classList.add('active');});});
+  document.querySelectorAll('.appcontent>section').forEach(sec=>sec.classList.remove('active'));const _s=$('tab-'+li.dataset.tab);_s.classList.add('active');void _s.offsetWidth;});});
 
 /* ===== REGISTRE SLIDERS : slide + appui long pour éditer + (option) double-tap reset ===== */
 function registerSlider(id,showId,opts){
