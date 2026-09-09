@@ -87,8 +87,13 @@
   details.ex-fold>summary::-webkit-details-marker{display:none;}
   details.ex-fold>summary::before{content:'▸';color:var(--acc);transition:transform .15s;}
   details.ex-fold[open]>summary::before{transform:rotate(90deg);}
-  #ckTabs a{font-size:.78rem;padding:.4rem .15rem;}
-  #ckTabs li.is-active a{background:var(--acc);color:#fff;border-color:var(--line);}
+  #ckTabs{margin-bottom:.55rem !important;}
+  #ckTabs ul{border-bottom:none;display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--panel);}
+  #ckTabs li{flex:1;}
+  #ckTabs li+li{margin-left:0;}
+  #ckTabs li a{border:0;border-left:1px solid var(--line);border-radius:0;justify-content:center;padding:.5rem .1rem;font-size:.78rem;font-weight:700;color:var(--ink);background:transparent;}
+  #ckTabs li:first-child a{border-left:0;}
+  #ckTabs li.is-active a{background:var(--acc);color:#fff;}
 </style>
 </head>
 <body>
