@@ -8,8 +8,18 @@
 <style>
   :root{--acc:#0b6bcb;--acc-soft:#e7f0fb;--ok:#1f9d55;--ok-soft:#e4f6ec;--warn:#c0392b;--ink:#1a2634;--panel:#fff;--bg:#eef2f7;--line:#d4dbe4;}
   html[data-theme="dark"]{--acc:#4aa3ff;--acc-soft:#12243a;--ok:#33c27f;--ok-soft:#13291f;--warn:#ff6b5b;--ink:#e6edf3;--panel:#182430;--bg:#0f1620;--line:#2a3a49;}
-  html,body{background:var(--bg);color:var(--ink);font-size:14px;}
-  body{-webkit-tap-highlight-color:transparent;}
+  html{background:var(--bg);color:var(--ink);font-size:14px;}
+  body{background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent;margin:0;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+  .navbar{flex:0 0 auto;}
+  .topbar{flex:0 0 auto;}
+  .topbar .pad{padding-bottom:0;}
+  .appcontent{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;}
+  .appcontent>section{display:none;width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .appcontent>section.active{display:block;}
+  .pad{max-width:640px;margin:0 auto;width:100%;padding:.6rem;box-sizing:border-box;}
+  #tab-check.active{display:flex;overflow:hidden;}
+  #tab-check .pad{display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden;}
+  #ckContainer{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:2px;}
   .navbar,.navbar-brand{background:var(--acc);}
   .navbar-brand{min-height:2.6rem;align-items:center;}
   .navbar-item{color:#fff !important;padding:.3rem .7rem;}
@@ -83,14 +93,14 @@
 <body>
 
 <nav class="navbar" role="navigation">
-  <div class="navbar-brand cont" style="display:flex;">
+  <div class="navbar-brand" style="display:flex;max-width:640px;margin:0 auto;width:100%;align-items:center;">
     <span class="navbar-item brand-title">✈ GlideDeck</span>
     <span class="navbar-item" style="margin-left:auto;"><button id="themeBtn" class="button is-small">🌙</button></span>
   </div>
 </nav>
 
-<div class="cont">
-  <div class="tabs is-toggle is-fullwidth is-small">
+<div class="topbar"><div class="pad">
+  <div class="tabs is-toggle is-fullwidth is-small" style="margin-bottom:0 !important;">
     <ul>
       <li class="is-active" data-tab="finesse"><a>Finesse</a></li>
       <li data-tab="voa"><a>VOA</a></li>
@@ -99,9 +109,11 @@
       <li data-tab="check"><a>Check</a></li>
     </ul>
   </div>
+</div></div>
+<div class="appcontent">
 
   <!-- ===== FINESSE ===== -->
-  <section id="tab-finesse">
+  <section id="tab-finesse" class="active"><div class="pad">
     <div class="seg">
       <button id="modeDist" class="is-on">Distance max</button>
       <button id="modeHaut">Hauteur nécessaire</button>
@@ -131,10 +143,10 @@
       <summary id="exTitle">Exemple — distance maximale</summary>
       <div id="finExample" style="margin-top:.5rem;"></div>
     </details>
-  </section>
+  </div></section>
 
   <!-- ===== VOA ===== -->
-  <section id="tab-voa" class="hidden">
+  <section id="tab-voa"><div class="pad">
     <div class="panel-card">
       <label class="field-lbl">Vs0 — décrochage config. atterrissage (km/h)</label>
       <div class="slider-val"><span class="sv-num" id="voaVs0Show">65</span><span class="sv-suf">&nbsp;km/h</span></div>
@@ -156,10 +168,10 @@
         (65 × 1,3) + (25 ÷ 2) + 5 = <strong>102 km/h</strong>
       </div>
     </details>
-  </section>
+  </div></section>
 
   <!-- ===== CONVERTISSEURS ===== -->
-  <section id="tab-conv" class="hidden">
+  <section id="tab-conv"><div class="pad">
     <div class="seg">
       <button id="cvFL" class="is-on">QNH ↔ FL</button>
       <button id="cvFT">ft ↔ m</button>
@@ -204,10 +216,10 @@
       </div>
       <div class="readout"><div class="big" id="ftBig">—</div><div class="unit" id="ftUnit"></div></div>
     </div>
-  </section>
+  </div></section>
 
   <!-- ===== FRÉQUENCES ===== -->
-  <section id="tab-freq" class="hidden">
+  <section id="tab-freq"><div class="pad">
     <p class="note" style="margin-bottom:.5rem;">Attrape la poignée ⠿ et glisse pour réordonner. Sauvegarde automatique.</p>
     <div id="freqList"></div>
     <div class="panel-card">
@@ -216,10 +228,10 @@
       <input class="input freq-add" id="newFreqVal" type="text" inputmode="decimal" placeholder="120.055" style="margin-bottom:.7rem;">
       <button id="addFreq" class="button is-fullwidth btn-big" style="background:var(--acc);color:#fff;padding:.7rem;font-size:1.05rem;">+ Ajouter</button>
     </div>
-  </section>
+  </div></section>
 
   <!-- ===== CHECKLISTS ===== -->
-  <section id="tab-check" class="hidden">
+  <section id="tab-check"><div class="pad">
     <div class="tabs is-toggle is-fullwidth is-small">
       <ul id="ckTabs">
         <li class="is-active" data-ck="cris"><a>CRIS</a></li>
@@ -228,9 +240,15 @@
         <li data-ck="brief"><a>BRIEF SÉCU</a></li>
       </ul>
     </div>
-    <div id="ckControls" class="progress-line"><span id="ckProgress">0 / 0</span><button id="ckReset" class="button is-small btn-big">Tout décocher</button></div>
+    <div id="ckControls" class="progress-line">
+      <span id="ckProgress">0 / 0</span>
+      <span style="display:flex;gap:.4rem;">
+        <button id="ckNext" class="button is-small" style="background:var(--ok);color:#fff;font-weight:800;">Suivant ✓</button>
+        <button id="ckReset" class="button is-small btn-big">Tout décocher</button>
+      </span>
+    </div>
     <div id="ckContainer"></div>
-  </section>
+  </div></section>
 </div>
 
 <script>
@@ -250,7 +268,7 @@ const fmt=(n,d=0)=>Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,max
 /* onglets */
 document.querySelectorAll('li[data-tab]').forEach(li=>{li.addEventListener('click',()=>{
   document.querySelectorAll('li[data-tab]').forEach(x=>x.classList.remove('is-active'));li.classList.add('is-active');
-  ['finesse','voa','conv','freq','check'].forEach(t=>$('tab-'+t).classList.add('hidden'));$('tab-'+li.dataset.tab).classList.remove('hidden');});});
+  document.querySelectorAll('.appcontent>section').forEach(sec=>sec.classList.remove('active'));$('tab-'+li.dataset.tab).classList.add('active');});});
 
 /* ===== REGISTRE SLIDERS : slide + appui long pour éditer + (option) double-tap reset ===== */
 function registerSlider(id,showId,opts){
@@ -448,6 +466,8 @@ function updateProg(k,t){const n=ckState[k].filter(Boolean).length;$('ckProgress
 document.querySelectorAll('#ckTabs li').forEach(li=>{li.addEventListener('click',()=>{
   document.querySelectorAll('#ckTabs li').forEach(x=>x.classList.remove('is-active'));li.classList.add('is-active');ckCurrent=li.dataset.ck;renderCk();});});
 $('ckReset').addEventListener('click',()=>{if(ckState[ckCurrent])ckState[ckCurrent]=ckState[ckCurrent].map(()=>false);renderCk();});
+$('ckNext').addEventListener('click',()=>{const arr=ckState[ckCurrent];if(!arr)return;const idx=arr.findIndex(v=>!v);if(idx<0)return;arr[idx]=true;renderCk();
+  const nxt=arr.findIndex(v=>!v);requestAnimationFrame(()=>{const rows=$('ckContainer').children;const tg=nxt>=0?rows[nxt]:rows[rows.length-1];if(tg)tg.scrollIntoView({block:'nearest',behavior:'smooth'});});});
 renderCk();
 
 /* init calculs */
