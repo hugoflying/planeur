@@ -87,12 +87,8 @@
   details.ex-fold>summary::-webkit-details-marker{display:none;}
   details.ex-fold>summary::before{content:'▸';color:var(--acc);transition:transform .15s;}
   details.ex-fold[open]>summary::before{transform:rotate(90deg);}
-  #ckTabs{margin-bottom:.55rem !important;}
-  #ckTabs ul{border-bottom:none;display:flex;gap:.35rem;}
-  #ckTabs li{flex:1;}
-  #ckTabs li+li{margin-left:0;}
-  #ckTabs li a{font-size:.78rem;padding:.45rem .15rem;justify-content:center;border:2px solid var(--acc);border-radius:9px;color:var(--acc);font-weight:800;background:transparent;}
-  #ckTabs li.is-active a{background:var(--acc);color:#fff;border-color:var(--acc);}
+  #ckTabs a{font-size:.78rem;padding:.4rem .15rem;}
+  #ckTabs li.is-active a{background:var(--acc);color:#fff;border-color:var(--line);}
 </style>
 </head>
 <body>
